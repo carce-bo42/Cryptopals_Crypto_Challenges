@@ -23,15 +23,20 @@ static const char base_hex[16] = "0123456789abcdef";
 
 int hex_to_bin(const char* hex, char* bin, int *bin_len) {
 
-    int hex_len = (int)strlen(hex);
+    int hex_len = 0;
     int shift = 4;
     int pos = 0;
 
-    if (*bin_len < hex_len / 2)
+    if (!hex || !bin || !bin_len)
         return 0;
-    
-    if (hex_len % 2)
-        return 0; // corrupted hex sequence
+
+    hex_len = (int)strlen(hex);
+
+    if (*bin_len < hex_len / 2
+        || hex_len % 2) // corrupted hex sequence
+    {
+        return 0; 
+    }
 
     for (int i = 0; hex[i]; ++i) {
         
@@ -62,11 +67,15 @@ int hex_to_bin(const char* hex, char* bin, int *bin_len) {
 // to test last function.
 char* bin_to_hex(const char* bin, int bin_len) {
 
-    char* hex = (char *)malloc((bin_len * 2) + 1);
+    char* hex = NULL;
     int pos = 0;
 
-    if (!hex)
+    if (!bin
+        || bin_len <= 0
+        || (hex = (char *)malloc((bin_len * 2) + 1)) == NULL)
+    {
         return 0;
+    }
 
     for (int i = 0; i < bin_len; i++) {
         hex[pos++] = base_hex[(bin[i] & 0xf0) >> 4];
@@ -103,23 +112,20 @@ int get_base64_len(int bin_len) {
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |b64 byte 1 |b64 byte 2 |b64 byte 3 |  PADDING  |  -> b64
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * 
  */
-char* hex_to_base64(const char* hex) {
+char* bin_to_base64(const char* bin, int bin_len) {
 
-    int bin_len = strlen(hex) / 2;
-    char *bin = (char *)malloc(bin_len);
-    int b64_len = get_base64_len(bin_len);
-    char *b64 = (char *)malloc(b64_len + 1);
-
+    int b64_len = 0;
+    char *b64 = NULL;
     int pos = 0;
     int pos64 = 0;
 
-    if (!bin || !b64)
-        goto err;
-
-    if (1 != hex_to_bin(hex, bin, &bin_len)) {
-        goto err;
+    if (!bin
+        || bin_len <= 0
+        || (b64_len = get_base64_len(bin_len)) <= 0
+        || (b64 = (char *)malloc(b64_len + 1)) == NULL)
+    {
+        return NULL;
     }
 
     /*
@@ -136,7 +142,7 @@ char* hex_to_base64(const char* hex) {
         char val_pos = bin[pos];
         char val_next_pos = pos + 1 < bin_len ? bin[pos + 1] : 0;
 
-        // b64[pos64] := 6 msb of val_pos
+        // b64[pos64] : = 6 msb of val_pos
         if (iteration == 0) {
             b64[pos64] = base_64[(val_pos & 0xfc) >> 2];
         // b64 := 2 lsb of val_pos | 4 msb of val_next_pos
@@ -161,15 +167,66 @@ char* hex_to_base64(const char* hex) {
         b64[pos64++] = '=';
     
     b64[pos64] = '\0';
-    goto clear;
-
-err:
-    if (b64) {
-        free(b64);
-        b64 = NULL;
-    }
-clear:
-    if (bin)
-        free(bin);
     return b64;
+}
+
+int base64_to_bin(const char* base64, char* bin, int *bin_len) {
+
+    int base64_len = 0;
+    int result_len = 0;
+    int padding_bytes = 0;
+    int pos = 0;
+
+    if (!bin || base64 == 0 || base64_len % 4) // corrupted base64 sequence
+        return 0;
+
+    base64_len = (int)strlen(base64);
+    result_len = (base64_len * 3) / 4;
+    padding_bytes += (base64[base64_len - 1] == '=') ? 1 : 0;
+    padding_bytes += (base64[base64_len - 2] == '=') ? 1 : 0;
+    result_len -= padding_bytes;
+    base64_len -= padding_bytes;
+
+    if (*bin_len < result_len)
+        return 0;
+
+    for (int i = 0; i < base64_len; i++) {
+
+        int iteration = i % 4;
+        char value_6bit = 0;
+
+        if (base64[i] >= 'A' && base64[i] <= 'Z')
+            value_6bit = base64[i] - 'A';
+        else if (base64[i] >= 'a' && base64[i] <= 'z')
+            value_6bit = (base64[i] - 'a') + 26;
+        else if (base64[i] >= '0' && base64[i] <= '9')
+            value_6bit = (base64[i] - '0') + 52;
+        else if (base64[i] == '+')
+            value_6bit = 62;
+        else if (base64[i] == '/')
+            value_6bit = 63;
+        else
+            return 0;
+
+        if (iteration == 0) {
+            bin[pos] = 0;
+            bin[pos] += value_6bit << 2;
+        } else if (iteration == 1) {
+            bin[pos] += value_6bit >> 4;
+            ++pos;
+            bin[pos] = 0;
+            bin[pos] += (value_6bit & 0x0f) << 4;
+        } else if (iteration == 2) {
+            bin[pos] += value_6bit >> 2;
+            ++pos;
+            bin[pos] = 0;
+            bin[pos] += (value_6bit & 0x03) << 6;
+        } else {
+            bin[pos] += (value_6bit);
+            ++pos;
+        }
+    }
+
+    *bin_len = result_len;
+    return 1;
 }
