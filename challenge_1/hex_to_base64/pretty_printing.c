@@ -1,9 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char base_64[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-static const char base_hex[16] = "0123456789abcdef";
-
 /* 
  * Hex representation produces 1 byte for each 4 bits of initial sequence.
  * Or, from another perspective, 2 output bytes for each input byte.
@@ -14,12 +11,27 @@ static const char base_hex[16] = "0123456789abcdef";
  * Thus, a base64 sequence corresponding to an n byte sequence has
  * ( n / 3 ) * 4 bytes of base64 representation + ( n % 3 ) padding bytes
  * represented by a '='. 
+ *
+ * 
+ * Useful hex values:
+ *
+ * 1111 1100 = 0xfc
+ * 0000 0011 = 0x03
+ * 1111 0000 = 0xf0
+ * 0000 1111 = 0x0f
+ * 1100 0000 = 0xc0
+ * 0011 1111 = 0x3f
+ *
  */
 
+
 /*
- * Hex and base64 representations are assumed to be null terminated strings,
+ * PS: Hex and base64 representations are assumed to be null terminated strings,
  * hence they do not need a length argument.
  */
+
+static const char base_64[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const char base_hex[16] = "0123456789abcdef";
 
 int hex_to_bin(const char* hex, char* bin, int *bin_len) {
 
@@ -128,14 +140,6 @@ char* bin_to_base64(const char* bin, int bin_len) {
         return NULL;
     }
 
-    /*
-     * 1111 1100 = 0xfc
-     * 0000 0011 = 0x03
-     * 1111 0000 = 0xf0
-     * 0000 1111 = 0x0f
-     * 1100 0000 = 0xc0
-     * 0011 1111 = 0x3f
-     */
     while (pos < bin_len) {
 
         int iteration = pos64 % 4;
