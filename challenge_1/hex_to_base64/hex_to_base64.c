@@ -1,7 +1,5 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 static const char base_64[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static const char base_hex[16] = "0123456789abcdef";
@@ -132,7 +130,7 @@ char* hex_to_base64(const char* hex) {
      * 1100 0000 = 0xc0
      * 0011 1111 = 0x3f
      */
-    while (pos64 < b64_len && pos < bin_len) {
+    while (pos < bin_len) {
 
         int iteration = pos64 % 4;
         char val_pos = bin[pos];
