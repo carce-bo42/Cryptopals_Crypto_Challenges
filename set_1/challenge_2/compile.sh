@@ -1,1 +1,6 @@
-gcc -Wall -Werror -Wextra main.c ../challenge_1/format_conversions.c -I ../challenge_1/ -o xor_compute
+#!/bin/bash
+EXECUTABLE=./compute_xor
+if [ -f "$FILE" ]; then
+	rm -rf $FILE
+fi
+gcc -Wall -Werror -Wextra main.c -I ../../lib/cryptopals/inc/ -l cryptopals_static -L ../../lib/ -o compute_xor

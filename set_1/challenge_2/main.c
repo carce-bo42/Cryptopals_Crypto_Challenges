@@ -1,6 +1,6 @@
-#include "format_conversions.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "cryptopals/format_conversions.h"
 
 int compute_xor(const char* lhs, int lhs_size,
                 const char* rhs, int rhs_size,
@@ -34,7 +34,7 @@ int main() {
     if (hex_to_bin(lhs, lhs_bin, &lhs_bin_len) != 1
         || hex_to_bin(rhs, rhs_bin, &rhs_bin_len) != 1)
     {
-        return 0;
+        return 1;
     }
 
     char result[18] = {0};
@@ -44,7 +44,7 @@ int main() {
                     rhs_bin, rhs_bin_len,
                     result, &result_len) != 1)
     {
-        return 0;
+        return 1;
     }
 
     char* printable_result = bin_to_hex(result, result_len);
