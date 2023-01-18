@@ -74,6 +74,7 @@ int main() {
          */
 
         //printf("different bits for sequence %d : %d\n", sequence_nb, different_bits);
+
         if (different_bits < 25) {
             candidate_list[candidate_idx] = sequence_nb;
             memcpy(candidates[candidate_idx], bin, bin_len);
@@ -81,24 +82,23 @@ int main() {
                 (unsigned char)get_max_frequency_entry(frequency, 255);
             ++candidate_idx;
         }
-
         ++sequence_nb;
-
     }
 
     int candidate_size = candidate_idx;
+    printf("number of candidates : %d\n\n", candidate_size);
 
     for (int c_idx = 0; c_idx < candidate_size; c_idx++) {
 
         printf("\n\n------ CANDIDATE IDX : %d ------\n", candidate_list[c_idx]);
         //char xor_chars[] = " eariotnslEARIOTNSL";
-        char xor_chars[] = " earEAR";
+        char xor_chars[] = " ";
         int xor_chars_len = strlen(xor_chars);
 
         for (int i = 0; i < xor_chars_len; i++) {
             xor_chars[i] ^= candidate_most_frequent[c_idx];
         }
-        char pt[34] = {0};
+        char pt[30] = {0};
 
         for (int j = 0; j < xor_chars_len; j++) {
             for (int i = 0; i < 30; i++) {
@@ -106,7 +106,7 @@ int main() {
                 pt[i] = candidates[c_idx][i] ^ xor_chars[j];
             }
             printf("\nxor_char : %c\n", xor_chars[j]);
-            write(1, pt, 34);
+            write(1, pt, 30);
         }
     }
 
