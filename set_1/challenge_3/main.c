@@ -24,7 +24,7 @@ int main() {
         return 1;
     
     for (int i = 0; i < ct_len; i++)
-        frequency[(int)ct[i]] += 1;
+        frequency[(unsigned char)ct[i]] += 1;
     for (int i = 0; i < 255; i++)
         frequency[i] /= 34;
     
@@ -34,7 +34,7 @@ int main() {
     }
 
     char most_frequent = (char)get_max_frequency_entry(frequency, 255);
-
+    
     // given some char c, the highest frequency corresponds to some asci k :
     // <some_char> ^ c = k
     // <some_char> ^ <some_char> ^ c = c
@@ -60,5 +60,6 @@ int main() {
         write(1, pt, 34);
     }
 
-    // The plaintext was Xored with the letter 'X'.
+    // The plaintext was Xored with the letter 'X',
+    // and reads "Cooking MC's like a pound of bacon"
 }
