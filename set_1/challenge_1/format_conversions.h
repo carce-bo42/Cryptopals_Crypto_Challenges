@@ -1,5 +1,5 @@
-#ifndef CRYPTOPALS_TOOLS_H
-# define CRYPTOPALS_TOOLS_H
+#ifndef CRYPTOPALS_FORMAT_CONVERSIONS_H
+# define CRYPTOPALS_FORMAT_CONVERSIONS_H
 # pragma once
 
 int hex_to_bin(const char* hex, char* bin, int *bin_len);

@@ -3,9 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "tools.h"
-
-
+#include "format_conversions.h"
 
 char* hex_to_base64(const char* hex) {
 
