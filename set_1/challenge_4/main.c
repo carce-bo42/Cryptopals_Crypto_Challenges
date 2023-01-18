@@ -110,13 +110,6 @@ int main() {
         }
     }
 
-    /*
-     * Result after printing :
-     * the encrypted string is the line number 170, and was encrypted using XOR
-     * with the character '5'. The original string reads
-     * "Now that the party is jumping"
-     */
-
     if (line)
         free(line);
     fclose(file);

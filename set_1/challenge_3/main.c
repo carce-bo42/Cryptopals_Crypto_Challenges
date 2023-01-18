@@ -59,7 +59,4 @@ int main() {
         printf("\n\n xor_char : %c\n", xor_chars[j]);
         write(1, pt, 34);
     }
-
-    // The plaintext was Xored with the letter 'X',
-    // and reads "Cooking MC's like a pound of bacon"
 }
