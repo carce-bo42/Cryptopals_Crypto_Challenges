@@ -98,7 +98,7 @@ char* bin_to_hex(const char* bin, int bin_len) {
     return hex;
 }
 
-int get_base64_len(int bin_len) {
+static int get_base64_len(int bin_len) {
 
     int groups_of_three_bytes = bin_len / 3;
     int leftover_bytes = (bin_len) % 3;

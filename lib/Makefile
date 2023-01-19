@@ -10,7 +10,8 @@ SRC_DIR = $(LIB_DIR)/src
 INC_DIR = $(LIB_DIR)/inc/
 
 SRC = $(SRC_DIR)/format_conversions.c \
-	  $(SRC_DIR)/logic_gates.c
+	  $(SRC_DIR)/logic_gates.c \
+	  $(SRC_DIR)/hamming_distance.c
 
 OBJ = $(SRC:.c=.o)
 
