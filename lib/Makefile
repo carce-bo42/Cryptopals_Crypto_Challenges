@@ -11,7 +11,9 @@ INC_DIR = $(LIB_DIR)/inc/
 
 SRC = $(SRC_DIR)/format_conversions.c \
 	  $(SRC_DIR)/logic_gates.c \
-	  $(SRC_DIR)/hamming_distance.c
+	  $(SRC_DIR)/hamming_distance.c \
+	  $(SRC_DIR)/repeating_key_xor.c \
+	  $(SRC_DIR)/rw_ops.c
 
 OBJ = $(SRC:.c=.o)
 
