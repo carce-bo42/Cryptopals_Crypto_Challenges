@@ -204,6 +204,7 @@ char solve_sgl_char_xor_encryption(const char* buf, int len) {
         }
         english_likelyhood[i] /= (double)len;
     }
+    free(pt);
     return (char)get_max_val_entry(english_likelyhood, 255);
 }
 
