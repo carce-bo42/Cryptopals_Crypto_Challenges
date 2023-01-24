@@ -1,6 +1,8 @@
 #include "cryptopals/hamming_distance.h"
 #include "cryptopals/format_conversions.h"
 #include "cryptopals/rw_ops.h"
+#include "cryptopals/repeating_key_xor.h"
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +18,17 @@ int get_min_val_entry(double* mat, int size) {
             min_val_entry = i;
     }
     return min_val_entry;
+}
+
+int get_max_val_entry(double* mat, int size) {
+
+    int max_val_entry = 0;
+
+    for (int i = 0; i < size; i++) {
+        if (mat[i] > mat[max_val_entry])
+            max_val_entry = i;
+    }
+    return max_val_entry;
 }
 
 /* 
@@ -164,6 +177,40 @@ char** construct_sgl_char_xor_arr(char** blocksize_array, int size,
 }
 
 
+// pt_byte ^ key_byte = ct_byte
+// pt_byte ^ (key_byte ^ key_byte) = ct_byte ^ key_byte
+// pt_byte = ct_byte ^ key_byte
+char solve_sgl_char_xor_encryption(const char* buf, int len) {
+
+    char eng_most_freq[] = " eariotnslEARIOTNSL";
+    int xor_chars_len = strlen(eng_most_freq);
+
+    char* pt = (char *)malloc(len);
+
+    double english_likelyhood[255] = {0};
+
+    for (int i = 0; i < 255; i++) {
+
+        for (int j = 0; j < len; j++) {
+            pt[j] = buf[j] ^ (char)i;
+        }
+
+        for (int j = 0; j < len; j++) {
+            for (int k = 0; k < xor_chars_len; k++) {
+                if (pt[j] == eng_most_freq[k]) {
+                    english_likelyhood[i] += 1.0;
+                    break;
+                }
+            }
+        }
+        //write(1, pt, len);
+        //printf("\n\n");
+        english_likelyhood[i] /= (double)len;
+    }
+    return (char)get_max_val_entry(english_likelyhood, 255);
+}
+
+
 void free_matrix(char** mat, int size) {
     if (mat) {
         for (int i = 0; i < size; i++) {
@@ -208,7 +255,38 @@ int main() {
                                                              last_blocksize);
         if (!sgl_char_xor_arr)
             return 1;
+        
+        char* key = (char *)malloc(key_sizes[i]);
+        for (int j = 0; j < key_sizes[i]; j++) {
+            char xor_key = 0;
+            if (j < last_blocksize) {
+                xor_key = solve_sgl_char_xor_encryption(sgl_char_xor_arr[j],
+                                                        num_blocks);
+            } else {
+                xor_key = solve_sgl_char_xor_encryption(sgl_char_xor_arr[j],
+                                                        num_blocks - 1);
+            }
+            key[j] = xor_key;
+        }
+        
+        char* decrypted_file = (char *)malloc(file_buf_len);
+        if (repeating_key_xor(key, key_sizes[i], file_buf, file_buf_len,
+                              decrypted_file, &file_buf_len) != 1)
+        {
+            return 1;
+        }
+        
+        // This spoils the result. Not recommended.
+        /*
+        printf("\n\n KEY VALUE : %d\n", key_sizes[i]);
+        write(1, key, key_sizes[i]);
 
+        printf("\n\n DECRYPTED FILE\n");
+        write(1, decrypted_file, (size_t)file_buf_len);
+        */
+        
+        free(key);
+        free(decrypted_file);
         free_matrix(blocksize_array, num_blocks);
         free_matrix(sgl_char_xor_arr, key_sizes[i]);
     }
