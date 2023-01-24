@@ -23,7 +23,7 @@ int get_min_val_entry(double* mat, int size) {
  * whose 4 first <keysize> blocks in <buf> have the lowest
  * averaged hamming distance.
  */
-int* get_keysize_from_humming_distance(const char* buf, int buf_len,
+int* get_keysize_from_hamming_distance(const char* buf, int buf_len,
                                        int min_ks, int max_ks,
                                        int result_size)
 {
@@ -41,7 +41,7 @@ int* get_keysize_from_humming_distance(const char* buf, int buf_len,
         return NULL;
     
     // Average hamming distance between 4 first KEYSIZE blocks.
-    for (int keysize = min_ks; keysize < max_ks; keysize++) {
+    for (int keysize = min_ks; keysize < max_ks + 1; keysize++) {
         double hd_1_2 = hamming_distance(buf, keysize,
                                          buf + keysize, keysize)
                                 / (double)keysize;
@@ -74,6 +74,7 @@ int* get_keysize_from_humming_distance(const char* buf, int buf_len,
 
         // keysize n is at n - min_ks entry.
         keysizes[i] += min_ks;
+        //printf("keysize : %d\n", keysizes[i]);
     }
 
     free(hd_keysizes);
@@ -90,7 +91,7 @@ char** divide_into_blocksize(const char* buf, int len,
                              int *size,
                              int* last_blocksize)
 {
-    if (!buf || len > blocksize || !last_blocksize) {
+    if (!buf || len < blocksize || !last_blocksize) {
         return NULL;
     }
     
@@ -99,17 +100,21 @@ char** divide_into_blocksize(const char* buf, int len,
     int fixed_size = (len / blocksize);
     int var_size = *last_blocksize == 0 ? 0 : 1;
 
-    char** blocks = (char **)malloc((fixed_size + var_size));
+    char** blocks = (char **)malloc(sizeof(char*) * (fixed_size + var_size));
+    
     for (int i = 0; i < fixed_size; i++)
         blocks[i] = (char *)malloc(blocksize);
+    
     if (*last_blocksize)
         blocks[fixed_size] = (char *)malloc((*last_blocksize));
 
-    for (int i = 0; i < fixed_size; i++)
-        memcpy(&blocks[i][0], buf + (i * blocksize), blocksize);
+    for (int i = 0; i < fixed_size; i++) {
+        memcpy(blocks[i], buf + (i * blocksize), blocksize);
+    }
+
     if (*last_blocksize != 0)
-        memcpy(&blocks[fixed_size][0], buf + (fixed_size * blocksize),
-                                    *last_blocksize);
+        memcpy(blocks[fixed_size], buf + (fixed_size * blocksize),
+                                   *last_blocksize);
     *size = fixed_size + var_size;
     return blocks;
 }
@@ -121,46 +126,49 @@ char** divide_into_blocksize(const char* buf, int len,
  * ret_array[0] = blocksize_array[0][0] + blocksize_array[1][0] + ...
  * ret_array[1] = blocksize_array[0][1] + blocksize_array[1][1] + ...
  *
- * <full_size_entries> returns how many of the entries in ret_array have
- * a size equal to <size>, starting at ret_array[0]. The rest of the entries
- * will have a length of <size> - 1, logically.
+ * ret_array will have the following properties:
+ * - It will contain <blocksize> entries.
+ * - the first <last_blocksize> entries will have a size == size
+ * - the rest of the entries up until <blocksize> will have size == size - 1.
  */
-int construct_sgl_char_xor_arr(char** blocksize_array, int size,
-                               int blocksize, int last_blocksize,
-                               int *full_size_entries)
+char** construct_sgl_char_xor_arr(char** blocksize_array, int size,
+                                  int blocksize, int last_blocksize)
 {
-    char** sgl_char_xor_arr = (char **)malloc(blocksize);
+    // The array has as many entries as bytes the key has, this is,
+    // the same as blocksize.
+    char** sgl_char_xor_arr = (char **)malloc(sizeof(char*) * blocksize);
 
-    // allocate <size> chars for all buffers within last_block_size range.
-    int total_chars = blocksize;
-    while (last_blocksize--)
-        sgl_char_xor_arr = (char *)malloc(size);
+    // The first <last_blocksize> entries will have a full size,
+    // the others will have one less byte.
+    int k = 0;
+    while (k < last_blocksize)
+        sgl_char_xor_arr[k++] = (char *)malloc(size);
 
-    total_chars -= blocksize;
-    while (total_chars--)
-        sgl_char_xor_arr = (char *)malloc(size - 1);
+    while (k < blocksize)
+        sgl_char_xor_arr[k++] = (char *)malloc(size - 1);
 
-    for (int j = 0; j < blocksize; j++) {
-        int k = 0;
-        for (int i = 0; i < size - 1; i++) {
-            sgl_char_xor_arr[j][k] = blocksize_array[i][j];
-            k++;
+    for (int i = 0; i < blocksize; i++) {
+        
+        // transpose blocksize_array. i is fixed here.
+        for (int j = 0; j < size - 1; j++) {
+            sgl_char_xor_arr[i][j] = blocksize_array[j][i];
         }
-        // copy last byte in case it exists.
+        
+        // write one more byte for the first <last_blocksize> iterations.
         if (last_blocksize != 0) {
-            sgl_char_xor_arr[j][k] = blocksize_array[size - 1][j];
+            sgl_char_xor_arr[i][size - 1] = blocksize_array[size - 1][i];
+            --last_blocksize;
         }
     }
+    return sgl_char_xor_arr;
 }
 
 
-void free_matrix(char** mat) {
+void free_matrix(char** mat, int size) {
     if (mat) {
-        int i = 0;
-        while (mat[i] != NULL) {
-            free(mat[i]);
+        for (int i = 0; i < size; i++) {
+            free(mat[i++]);
         }
-        free(mat[i]);
         free(mat);
     }
 }
@@ -177,25 +185,33 @@ int main() {
     if (base64_to_bin(file_buf_base64, file_buf, &file_buf_len) == 0)
         return 1;
     
+    //printf("file_buf_len : %d\n", file_buf_len); 2876 bytes.
     int number_of_candidates = 3;
-    int* key_sizes = get_keysize_from_humming_distance(file_buf, file_buf_len, 
+    int* key_sizes = get_keysize_from_hamming_distance(file_buf, file_buf_len, 
                                                        2, 80,
                                                        number_of_candidates);
     // keysizes : 29, 58, 5.
     for (int i = 0; i < number_of_candidates; i++) {
+
         int last_blocksize = 0;
         int num_blocks = 0;
+
         char** blocksize_array = divide_into_blocksize(file_buf, file_buf_len,
-                                                key_sizes[i], &num_blocks,
-                                                &last_blocksize);
+                                                       key_sizes[i], &num_blocks,
+                                                       &last_blocksize);
+        if (!blocksize_array)
+            return 1;
+
         char** sgl_char_xor_arr = construct_sgl_char_xor_arr(blocksize_array,
+                                                             num_blocks,
                                                              key_sizes[i],
                                                              last_blocksize);
-        free_matrix(blocksize_array);
+        if (!sgl_char_xor_arr)
+            return 1;
+
+        free_matrix(blocksize_array, num_blocks);
+        free_matrix(sgl_char_xor_arr, key_sizes[i]);
     }
-
-
-    
 
     free(key_sizes);
     free(file_buf_base64); 
