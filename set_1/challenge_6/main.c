@@ -87,7 +87,6 @@ int* get_keysize_from_hamming_distance(const char* buf, int buf_len,
 
         // keysize n is at n - min_ks entry.
         keysizes[i] += min_ks;
-        //printf("keysize : %d\n", keysizes[i]);
     }
 
     free(hd_keysizes);
@@ -203,8 +202,6 @@ char solve_sgl_char_xor_encryption(const char* buf, int len) {
                 }
             }
         }
-        //write(1, pt, len);
-        //printf("\n\n");
         english_likelyhood[i] /= (double)len;
     }
     return (char)get_max_val_entry(english_likelyhood, 255);
@@ -232,12 +229,12 @@ int main() {
     if (base64_to_bin(file_buf_base64, file_buf, &file_buf_len) == 0)
         return 1;
     
-    //printf("file_buf_len : %d\n", file_buf_len); 2876 bytes.
+    // 3 candidates because why not
     int number_of_candidates = 3;
     int* key_sizes = get_keysize_from_hamming_distance(file_buf, file_buf_len, 
                                                        2, 80,
                                                        number_of_candidates);
-    // keysizes : 29, 58, 5.
+
     for (int i = 0; i < number_of_candidates; i++) {
 
         int last_blocksize = 0;
