@@ -1,5 +1,5 @@
 #!/bin/bash
-EXECUTABLE=./break_repeating_key_xor.out
+EXECUTABLE=./aes_ecb_mode.out
 if [ -f "$FILE" ]; then
 	rm -rf $FILE
 fi
