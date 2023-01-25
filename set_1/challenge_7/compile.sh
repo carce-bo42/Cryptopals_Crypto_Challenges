@@ -7,4 +7,4 @@ gcc -Wall -Werror -Wextra -g3 main.c \
 	 -I../../lib/cryptopals/inc/ -I../../lib/openssl-3.0.7/include/ \
 	 -L../../lib/ -L../../lib/openssl-3.0.7/ \
      -lcryptopals_static -lcrypto \
-	 -o break_repeating_key_xor.out
+	 -o aes_ecb_mode.out

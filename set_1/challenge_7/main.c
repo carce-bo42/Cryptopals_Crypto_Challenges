@@ -23,8 +23,6 @@ int main() {
     if (base64_to_bin(file_buf_base64, file_buf, &file_buf_len) == 0)
         return 1;
 
-    printf("file_buf_len : %d\n", file_buf_len);
-
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     const unsigned char key[] = "YELLOW SUBMARINE";
 
