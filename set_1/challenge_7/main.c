@@ -42,8 +42,10 @@ int main() {
     total_decrypted_len += bytes_left;
 
     // result
+    /*
     printf("decrypted file length: %d\n", total_decrypted_len);
     write(1, decrypted_file, total_decrypted_len);
+    */
     EVP_CIPHER_CTX_free(ctx);
     free(file_buf_base64);
     return 0;
