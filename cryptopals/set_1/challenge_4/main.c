@@ -48,20 +48,30 @@ int main() {
             return 1;
         }
 
-        float frequency[256] = {0.0f};
-        int different_bits = 0;
+        float hamming_dst[256] = {0.0f};
+        int keysize = 16;
 
-        for (int i = 0; i < bin_len; i++) {
-            frequency[(unsigned char)bin[i]] += 1;
-        }
-        for (int i = 0; i < 255; i++)
-            frequency[i] /= 34;
-        
-        for (int i = 0; i < 255; i++) {
-            if (frequency[i] != 0.0f) {
-                different_bits += 1;
-            }
-        }
+        double hd_1_2 = hamming_distance(line, keysize,
+                                         line + keysize, keysize)
+                                / (double)keysize;
+        double hd_1_3 = hamming_distance(line, keysize,
+                                         line + (2 * keysize), keysize)
+                                / (double)keysize;
+        double hd_1_4 = hamming_distance(line, keysize,
+                                         line + (3 * keysize), keysize)
+                                / (double)keysize;
+        double hd_2_3 = hamming_distance(line + keysize, keysize,
+                                         line + (2 * keysize), keysize)
+                                / (double)keysize;
+        double hd_2_4 = hamming_distance(line + keysize, keysize,
+                                         line + (3 * keysize), keysize)
+                                / (double)keysize;
+        double hd_3_4 = hamming_distance(line + (2 * keysize), keysize,
+                                         line + (3 * keysize), keysize)
+                                / (double)keysize;
+        hd_keysizes[keysize - min_ks] = (hd_1_2 + hd_1_3 + hd_1_4
+                                        + hd_2_3 + hd_2_4 + hd_3_4)
+                                        / 6.0f;
 
         /* I could do math, but I could also be heuristic. The well-known birthday
          * paradox, states that for 57 random people to be asked for their birthday,
