@@ -58,7 +58,7 @@ int encrypt_aes_128_ecb(const unsigned char* key,
         goto err;
     
     total_encrypted_len += out_len_cpy;
-    int bytes_left = *out_len - total_encrypted_len;
+    bytes_left = *out_len - total_encrypted_len;
 
     if (1 != EVP_EncryptFinal(ctx, (unsigned char *)in + total_encrypted_len,
                                    &bytes_left))

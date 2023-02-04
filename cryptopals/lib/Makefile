@@ -1,6 +1,6 @@
 NAME = libcryptopals.so
 
-CFLAGS = -Wall -Werror -Wextra -fPIC
+CFLAGS = -Wall -Werror -Wextra -fPIC -O3
 
 CC = gcc
 
@@ -19,6 +19,7 @@ SRC = $(SRC_DIR)/format_conversions.c \
 	  $(SRC_DIR)/rw_ops.c \
 	  $(SRC_DIR)/ossl_core.c \
 	  $(SRC_DIR)/aes_ecb.c \
+	  $(SRC_DIR)/aes_cbc.c \
 	  $(SRC_DIR)/matrix_ops.c
 
 OBJ = $(SRC:.c=.o)
