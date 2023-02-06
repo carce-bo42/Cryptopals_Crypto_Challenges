@@ -19,6 +19,7 @@ int decrypt_aes_128_ecb(const unsigned char* key,
 
     if (1 != EVP_DecryptInit(ctx, EVP_aes_128_ecb(), key, NULL))
         goto err;
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
 
     if (1 != EVP_DecryptUpdate(ctx, out, &out_len_cpy,
                                (const unsigned char*)in, in_len))
@@ -52,6 +53,7 @@ int encrypt_aes_128_ecb(const unsigned char* key,
 
     if (1 != EVP_EncryptInit(ctx, EVP_aes_128_ecb(), key, NULL))
         goto err;
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
 
     if (1 != EVP_EncryptUpdate(ctx, out, &out_len_cpy,
                                (const unsigned char*)in, in_len))

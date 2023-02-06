@@ -4,7 +4,7 @@ if [ -f "$FILE" ]; then
 	rm -rf $FILE
 fi
 
-gcc -Wall -Werror -Wextra -g3 -fsanitize=address main.c \
+gcc -Wall -Werror -Wextra -g3 main.c \
 	 -I../../lib/cryptopals/inc/  \
 	 -L../../lib/ \
      -lcryptopals \

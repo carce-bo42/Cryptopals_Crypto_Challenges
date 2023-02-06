@@ -29,12 +29,12 @@ int encrypt_aes_128_cbc(const unsigned char* key,
         if (enc_len == 0) {
             if (compute_xor((const char *)tmp1, tmp_len,
                             (const char *)iv, 16,
-                            (char *)out, &tmp_len) != 1)
+                            (char *)tmp1, &tmp_len) != 1)
                 return 0;
         } else {
             if (compute_xor((const char *)tmp1, tmp_len,
                             (const char *)tmp0, tmp_len,
-                            (char *)(out + in_len), &tmp_len) != 1)
+                            (char *)tmp1, &tmp_len) != 1)
                 return 0;
         }
 
@@ -44,6 +44,7 @@ int encrypt_aes_128_cbc(const unsigned char* key,
 
         // save last result for next XOR.
         memcpy(tmp0, tmp1, tmp_len);
+        memcpy(out + enc_len, tmp1, tmp_len);
 
         enc_len += tmp_len;
 
@@ -77,17 +78,18 @@ int decrypt_aes_128_cbc(const unsigned char* key,
         if (dec_len == 0) {
             if (compute_xor((const char *)tmp1, tmp_len,
                             (const char *)iv, 16,
-                            (char *)out, &tmp_len) != 1)
+                            (char *)tmp1, &tmp_len) != 1)
                 return 0;
         } else {
             if (compute_xor((const char *)tmp1, tmp_len,
                             (const char *)tmp0, tmp_len,
-                            (char *)(out + in_len), &tmp_len) != 1)
+                            (char *)tmp1, &tmp_len) != 1)
                 return 0;
         }
 
         // save ct into bufer
         memcpy(tmp0, in + dec_len, 16);
+        memcpy(out + dec_len, tmp1, tmp_len);
 
         dec_len += tmp_len;
 

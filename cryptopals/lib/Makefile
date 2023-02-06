@@ -1,6 +1,6 @@
 NAME = libcryptopals.so
 
-CFLAGS = -Wall -Werror -Wextra -fPIC -O3
+CFLAGS = -Wall -Werror -Wextra -fPIC -g3
 
 CC = gcc
 
