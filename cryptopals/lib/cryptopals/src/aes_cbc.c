@@ -21,7 +21,7 @@ int encrypt_aes_128_cbc(const unsigned char* key,
     if (*out_len < in_len)
         return 0;
 
-    do {
+     while (enc_len < in_len) {
         // get pt into bufer
         memcpy(tmp1, in + enc_len, 16);
 
@@ -44,11 +44,12 @@ int encrypt_aes_128_cbc(const unsigned char* key,
 
         // save last result for next XOR.
         memcpy(tmp0, tmp1, tmp_len);
+
+        // copy result to buffer
         memcpy(out + enc_len, tmp1, tmp_len);
 
         enc_len += tmp_len;
-
-    } while (enc_len < in_len);
+    }
 
     *out_len = in_len;
     return 1;
@@ -68,7 +69,7 @@ int decrypt_aes_128_cbc(const unsigned char* key,
     if (*out_len < in_len)
         return 0;
 
-    do {
+    while (dec_len < in_len) {
 
         if (decrypt_aes_128_ecb(key, in + dec_len, 16,
                                 tmp1, &tmp_len) != 1)
@@ -89,12 +90,14 @@ int decrypt_aes_128_cbc(const unsigned char* key,
 
         // save ct into bufer
         memcpy(tmp0, in + dec_len, 16);
+
+        // copy result to buffer
         memcpy(out + dec_len, tmp1, tmp_len);
 
         dec_len += tmp_len;
 
-    } while (dec_len < in_len);
+    }
 
-    *out_len = in_len;
+    *out_len = dec_len;
     return 1;
 }
