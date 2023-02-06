@@ -31,10 +31,10 @@ int main() {
         return 1;
 
     // result
-    /*
-    printf("decrypted file length: %d\n", total_decrypted_len);
-    write(1, decrypted_file, total_decrypted_len);
-    */
+	/*
+    printf("decrypted file length: %d\n", dec_len);
+    write(1, decrypted_file, dec_len);
+	*/
     free(file_buf_base64);
     return 0;
 }
