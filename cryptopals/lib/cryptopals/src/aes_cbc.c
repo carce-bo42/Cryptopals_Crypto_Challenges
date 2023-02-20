@@ -14,39 +14,34 @@ int encrypt_aes_128_cbc(const unsigned char* key,
                         unsigned char* out, int *out_len)
 {
     int enc_len = 0;
-    unsigned char tmp1[16] = {0};
-    unsigned char tmp0[16] = {0};
+    unsigned char last_result[16] = {0};
+    unsigned char xor_result[16] = {0};
     int tmp_len = 16;
 
     if (*out_len < in_len)
         return 0;
 
      while (enc_len < in_len) {
-        // get pt into bufer
-        memcpy(tmp1, in + enc_len, 16);
 
         // XOR against last ct or IV if first iteration
         if (enc_len == 0) {
-            if (compute_xor((const char *)tmp1, tmp_len,
+            if (compute_xor((const char *)in + enc_len, tmp_len,
                             (const char *)iv, 16,
-                            (char *)tmp1, &tmp_len) != 1)
+                            (char *)xor_result, &tmp_len) != 1)
                 return 0;
         } else {
-            if (compute_xor((const char *)tmp1, tmp_len,
-                            (const char *)tmp0, tmp_len,
-                            (char *)tmp1, &tmp_len) != 1)
+            if (compute_xor((const char *)in + enc_len, tmp_len,
+                            (const char *)last_result, tmp_len,
+                            (char *)xor_result, &tmp_len) != 1)
                 return 0;
         }
 
-        if (encrypt_aes_128_ecb(key, tmp1, tmp_len,
-                                tmp0, &tmp_len) != 1)
+        if (encrypt_aes_128_ecb(key, xor_result, tmp_len,
+                                last_result, &tmp_len) != 1)
             return 0;
 
-        // save last result for next XOR.
-        memcpy(tmp0, tmp1, tmp_len);
-
         // copy result to buffer
-        memcpy(out + enc_len, tmp1, tmp_len);
+        memcpy(out + enc_len, last_result, tmp_len);
 
         enc_len += tmp_len;
     }
@@ -72,7 +67,7 @@ int decrypt_aes_128_cbc(const unsigned char* key,
     while (dec_len < in_len) {
 
         if (decrypt_aes_128_ecb(key, in + dec_len, 16,
-                                tmp1, &tmp_len) != 1)
+                                , &tmp_len) != 1)
             return 0;
 
         // XOR against last ct or IV if first iteration
@@ -95,7 +90,6 @@ int decrypt_aes_128_cbc(const unsigned char* key,
         memcpy(out + dec_len, tmp1, tmp_len);
 
         dec_len += tmp_len;
-
     }
 
     *out_len = dec_len;
