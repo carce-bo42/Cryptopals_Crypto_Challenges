@@ -67,7 +67,7 @@ int decrypt_aes_128_cbc(const unsigned char* key,
     while (dec_len < in_len) {
 
         if (decrypt_aes_128_ecb(key, in + dec_len, 16,
-                                , &tmp_len) != 1)
+                                tmp1, &tmp_len) != 1)
             return 0;
 
         // XOR against last ct or IV if first iteration
