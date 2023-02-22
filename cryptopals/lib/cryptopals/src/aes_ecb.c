@@ -9,68 +9,86 @@
 
 int decrypt_aes_128_ecb(const unsigned char* key,
                         const unsigned char* in, int in_len,
-                        unsigned char* out, int *out_len)
+                        unsigned char* out, int *out_len,
+                        int padding)
 {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-    int out_len_cpy = *out_len;
-    int total_decrypted_len = 0;
-    int bytes_left = 0;
+    int dec_len = 0;
     int ret = 0;
 
-    if (1 != EVP_DecryptInit(ctx, EVP_aes_128_ecb(), key, NULL))
+    if (1 != EVP_DecryptInit(ctx, EVP_aes_128_ecb(), key, NULL)) {
+        printf("Decrypt Init ecb error\n");
         goto err;
-    EVP_CIPHER_CTX_set_padding(ctx, 0);
+    }
+    EVP_CIPHER_CTX_set_padding(ctx, padding);
 
-    if (1 != EVP_DecryptUpdate(ctx, out, &out_len_cpy,
-                               (const unsigned char*)in, in_len))
+    while (dec_len < in_len) {
+        if (1 != EVP_DecryptUpdate(ctx, out + dec_len, out_len,
+                                (const unsigned char*)in + dec_len, 16))
+        {
+            printf("Decrypt Update ecb error\n");
+            goto err;
+        }
+
+        dec_len += 16;
+        *out_len -= 16;
+    }
+
+    if (1 != EVP_DecryptFinal(ctx, (unsigned char *)out + dec_len,
+                              out_len))
+    {
+        printf("Decrypt Final ecb error\n");
         goto err;
-    
-    total_decrypted_len += out_len_cpy;
-    bytes_left = *out_len - total_decrypted_len;
+    }
 
-    if (1 != EVP_DecryptFinal(ctx, (unsigned char *)in + total_decrypted_len,
-                                   &bytes_left))
-        goto err;
-
-    total_decrypted_len += bytes_left;
-    *out_len = total_decrypted_len;
+    *out_len += dec_len;
     ret = 1;
 
 err:
-    EVP_CIPHER_CTX_free(ctx);
+    if (ctx) { EVP_CIPHER_CTX_free(ctx); }
     return ret;
 }
 
 int encrypt_aes_128_ecb(const unsigned char* key,
                         const unsigned char* in, int in_len,
-                        unsigned char* out, int *out_len)
+                        unsigned char* out, int *out_len,
+                        int padding)
 {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-    int out_len_cpy = *out_len;
-    int total_encrypted_len = 0;
-    int bytes_left = 0;
+    int enc_len = 0;
     int ret = 0;
 
     if (1 != EVP_EncryptInit(ctx, EVP_aes_128_ecb(), key, NULL))
+    {
+        printf("Encrypt Init ecb error\n");
         goto err;
-    EVP_CIPHER_CTX_set_padding(ctx, 0);
+    }
+    EVP_CIPHER_CTX_set_padding(ctx, padding);
 
-    if (1 != EVP_EncryptUpdate(ctx, out, &out_len_cpy,
-                               (const unsigned char*)in, in_len))
+    while (enc_len < in_len) {
+
+        if (1 != EVP_EncryptUpdate(ctx, out + enc_len, out_len,
+                                (const unsigned char*)in + enc_len, 16))
+        {
+            printf("Encrypt Update ecb error\n");
+            goto err;
+        }
+
+        enc_len += 16;
+        *out_len -= 16;
+    }
+
+    if (1 != EVP_EncryptFinal(ctx, (unsigned char *)out + enc_len,
+                                   out_len))
+    {
+        printf("Encrypt Final ecb error\n");
         goto err;
-    
-    total_encrypted_len += out_len_cpy;
-    bytes_left = *out_len - total_encrypted_len;
+    }
 
-    if (1 != EVP_EncryptFinal(ctx, (unsigned char *)in + total_encrypted_len,
-                                   &bytes_left))
-        goto err;
-
-    total_encrypted_len += bytes_left;
-    *out_len = total_encrypted_len;
+    *out_len += enc_len;
     ret = 1;
 
 err:
-    EVP_CIPHER_CTX_free(ctx);
+    if (ctx) { EVP_CIPHER_CTX_free(ctx); }
     return ret;
 }

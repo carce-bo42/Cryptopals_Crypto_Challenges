@@ -27,7 +27,7 @@ int main() {
     int dec_len = 4096;
 
     if (1 != decrypt_aes_128_ecb(key, (const unsigned char *)file_buf,
-                                 file_buf_len, decrypted_file, &dec_len))
+                                 file_buf_len, decrypted_file, &dec_len, 1))
         return 1;
 
     // result
