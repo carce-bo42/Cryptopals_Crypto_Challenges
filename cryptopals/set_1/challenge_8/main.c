@@ -160,8 +160,8 @@ int main() {
                     char byte_pair_2[2] = {block_array[j][k1],
                                            block_array[j][k1 + 1]};
 
-                        if (memcmp(byte_pair_1, byte_pair_2, 2) == 0)
-                            ecb_encryption_idx[line_count] += 1;
+                    if (memcmp(byte_pair_1, byte_pair_2, 2) == 0)
+                        ecb_encryption_idx[line_count] += 1;
                 }
             }
         }

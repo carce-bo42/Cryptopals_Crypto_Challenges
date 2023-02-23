@@ -16,9 +16,9 @@ int encrypt_aes_128_cbc(const unsigned char* key,
                         int padding)
 {
     int enc_len = 0;
-    unsigned char last_result[48] = {0};
-    unsigned char xor_result[48] = {0};
-    int tmp_len = 48;
+    unsigned char last_result[16] = {0};
+    unsigned char xor_result[16] = {0};
+    int tmp_len = 16;
 
     if (*out_len < in_len)
         return 0;
@@ -45,7 +45,7 @@ int encrypt_aes_128_cbc(const unsigned char* key,
         // copy result to buffer
         memcpy(out + enc_len, last_result, tmp_len);
 
-        enc_len += 16;
+        enc_len += tmp_len;
     }
 
     *out_len = enc_len;
@@ -59,9 +59,9 @@ int decrypt_aes_128_cbc(const unsigned char* key,
                         int padding)
 {
     int dec_len = 0;
-    unsigned char tmp1[48] = {0};
-    unsigned char tmp0[48] = {0};
-    int tmp_len = 48;
+    unsigned char tmp1[16] = {0};
+    unsigned char tmp0[16] = {0};
+    int tmp_len = 16;
 
     if (*out_len < in_len)
         return 0;
